@@ -20,6 +20,7 @@
 ;
 ; HISTORY:
 ;   2012-12-09, AYS: release
+;   2012-12-12, AYS: fix to rear segment source specification for autoroi
 
 pro ingest,filename,spec_front,spec_rear,time,slice=slice,plot=plot,save=save,source=source
 
@@ -130,7 +131,7 @@ for i = 0,nslice-1 do begin
   print,"Count rate (s^-1): ",total(spec_rear[*,i])/duration
   print,"Reset period (s): ",duration/reset_rear[i]
   print,"ULD rate (s^-1): ",uld_rear[i]/duration
-  if keyword_set(source) then autoroi,spec_rear[*,i]/duration,source
+  if keyword_set(source) then autoroi,spec_rear[*,i]/duration,source,/rear
 endfor
 
 end
