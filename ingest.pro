@@ -13,6 +13,8 @@
 ;   spec_front	spectrum from the front segment (2D if slice is set)
 ;   spec_rear	spectrum from the rear segment (2D if slice is set)
 ;   time	total acquisition time (may be inaccurate from bad packets)
+;   gain_front	optional - energy calibration for front if source is set
+;   gain_rear	optional - energy calibration for rear if source is set
 ;
 ; EXAMPLES:
 ;   ingest,'12339202.ssr',sf,sr,time,/plot
@@ -22,8 +24,11 @@
 ;   2012-12-09, AYS: release
 ;   2012-12-12, AYS: fix to rear segment source specification for autoroi
 ;   2012-12-14, AYS: only use the first filename supplied (or the first of a wildcard match)
+;   2012-12-17, AYS: added plot indication of slices and optional outputs for gain
 
-pro ingest,filename,spec_front,spec_rear,time,slice=slice,plot=plot,save=save,source=source
+pro ingest,filename,spec_front,spec_rear,time,$
+  source=source,gain_front=gain_front,gain_rear=gain_rear,$
+  slice=slice,plot=plot,save=save
 
 ssrfile = (file_search(filename, count=count))[0]
 if count eq 0 then begin
@@ -123,7 +128,7 @@ for i = 0,nslice-1 do begin
   print,"Count rate (s^-1): ",total(spec_front[*,i])/duration
   print,"Reset period (s): ",duration/reset_front[i]
   print,"ULD rate (s^-1): ",uld_front[i]/duration
-  if keyword_set(source) then autoroi,spec_front[*,i]/duration,source
+  if keyword_set(source) then autoroi,spec_front[*,i]/duration,source,gain=gain_front
 endfor
 
 print,"*** Rear segment ***"
@@ -133,7 +138,7 @@ for i = 0,nslice-1 do begin
   print,"Count rate (s^-1): ",total(spec_rear[*,i])/duration
   print,"Reset period (s): ",duration/reset_rear[i]
   print,"ULD rate (s^-1): ",uld_rear[i]/duration
-  if keyword_set(source) then autoroi,spec_rear[*,i]/duration,source,/rear
+  if keyword_set(source) then autoroi,spec_rear[*,i]/duration,source,/rear,gain=gain_rear
 endfor
 
 end
