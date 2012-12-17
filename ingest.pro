@@ -104,6 +104,7 @@ if keyword_set(plot) then begin
   plot,lc_front,yr=[1,max([lc_rear,lc_front])],psym=10,$
     xtitle='Seconds',ytitle='Total counts',title='Count lightcurve'
   oplot,lc_rear,psym=10,color=6
+  for i=0,nslice-1 do oplot,(i ne nslice-1 ? tbin*(i+1) : time)*[1,1],!y.crange,color=5,linestyle=1
 
   !p.multi = temp
 endif
