@@ -21,10 +21,11 @@
 ; HISTORY:
 ;   2012-12-09, AYS: release
 ;   2012-12-12, AYS: fix to rear segment source specification for autoroi
+;   2012-12-14, AYS: only use the first filename supplied (or the first of a wildcard match)
 
 pro ingest,filename,spec_front,spec_rear,time,slice=slice,plot=plot,save=save,source=source
 
-ssrfile = file_search(filename, count=count)
+ssrfile = (file_search(filename, count=count))[0]
 if count eq 0 then begin
   print,"No such file"
   return
