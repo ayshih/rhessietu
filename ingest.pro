@@ -25,6 +25,7 @@
 ;   2012-12-12, AYS: fix to rear segment source specification for autoroi
 ;   2012-12-14, AYS: only use the first filename supplied (or the first of a wildcard match)
 ;   2012-12-17, AYS: added plot indication of slices and optional outputs for gain
+;   2013-01-21, AYS: removes duplicate reset events (using a window of 40 us)
 
 pro ingest,filename,spec_front,spec_rear,time,$
   source=source,gain_front=gain_front,gain_rear=gain_rear,$
@@ -80,6 +81,12 @@ endif else begin
 endelse
 uld_front = spec_front[1,*] ; -1
 reset_front = spec_front[0,*] ; -2
+if reset_front gt 0 then begin
+  temp_use = where(d[front].channel eq -2)
+  temp_offset = ((d[front])[temp_use].time-shift((d[front])[temp_use].time,1))[1:*]
+  ;print,(histogram(temp_offset,bin=10))[0:10]
+  reset_front = total(temp_offset ge 40) ; ad-hoc value to call a reset a duplicate
+endif
 spec_front = spec_front[2:*,*]
 
 if nrear gt 0 then begin
@@ -91,6 +98,12 @@ endif else begin
 endelse
 uld_rear = spec_rear[1,*] ; -1
 reset_rear = spec_rear[0,*] ; -2
+if reset_front gt 0 then begin
+  temp_use = where(d[rear].channel eq -2)
+  temp_offset = ((d[rear])[temp_use].time-shift((d[rear])[temp_use].time,1))[1:*]
+  ;print,(histogram(temp_offset,bin=10))[0:10]
+  reset_rear = total(temp_offset ge 40) ; ad-hoc value to call a reset a duplicate
+endif
 spec_rear = spec_rear[2:*,*]
 
 if keyword_set(plot) then begin
