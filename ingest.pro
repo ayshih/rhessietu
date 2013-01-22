@@ -134,23 +134,27 @@ if keyword_set(save) then begin
   save,filename,spec_front,spec_rear,lc_front,lc_rear,slice,time,filename=stub+'.sav'
 endif
 
+tab = string(9b)
+
 print,"*** Front segment ***"
 for i = 0,nslice-1 do begin
   duration = float(i ne nslice-1 ? tbin : time-(nslice-1)*tbin)
-  print,"Duration (s): ",duration
-  print,"Count rate (s^-1): ",total(spec_front[*,i])/duration
-  print,"Reset period (s): ",duration/reset_front[i]
-  print,"ULD rate (s^-1): ",uld_front[i]/duration
+  print,"Duration: "+tab,duration," s"
+  print,"Count rate: "+tab,total(spec_front[*,i])/duration," counts/s"
+  print,"Reset period: "+tab,duration/reset_front[i]," s/reset"
+  print,"Reset rate: "+tab,reset_front[i]/duration," resets/s"
+  print,"ULD rate: "+tab,uld_front[i]/duration," ULDs/s"
   if keyword_set(source) then autoroi,spec_front[*,i]/duration,source,gain=gain_front
 endfor
 
 print,"*** Rear segment ***"
 for i = 0,nslice-1 do begin
   duration = float(i ne nslice-1 ? tbin : time-(nslice-1)*tbin)
-  print,"Duration (s): ",duration
-  print,"Count rate (s^-1): ",total(spec_rear[*,i])/duration
-  print,"Reset period (s): ",duration/reset_rear[i]
-  print,"ULD rate (s^-1): ",uld_rear[i]/duration
+  print,"Duration: "+tab,duration," s"
+  print,"Count rate: "+tab,total(spec_rear[*,i])/duration," counts/s"
+  print,"Reset period: "+tab,duration/reset_rear[i]," s/reset"
+  print,"Reset rate: "+tab,reset_rear[i]/duration," resets/s"
+  print,"ULD rate: "+tab,uld_rear[i]/duration," ULDs/s"
   if keyword_set(source) then autoroi,spec_rear[*,i]/duration,source,/rear,gain=gain_rear
 endfor
 
