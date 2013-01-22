@@ -26,6 +26,7 @@
 ;   2012-12-14, AYS: only use the first filename supplied (or the first of a wildcard match)
 ;   2012-12-17, AYS: added plot indication of slices and optional outputs for gain
 ;   2013-01-21, AYS: removes duplicate reset events (using a window of 40 us)
+;   2013-01-22, AYS: modified the duplicate-reset removal for clarity and so slices work, output more formatted
 
 pro ingest,filename,spec_front,spec_rear,time,$
   source=source,gain_front=gain_front,gain_rear=gain_rear,$
@@ -68,6 +69,21 @@ time = max(t)-min(t)
 front = where(d.a2d_index eq 8, nfront)
 rear = where(d.a2d_index eq 17, nrear)
 
+; Filter out duplicate reset events
+; Criterion here is a reset that occurs less than 40 us after a previous reset
+front_resets = where(d.a2d_index eq 8 and d.channel eq -2, nfront_resets)
+if nfront_resets gt 1 then begin ; needs at least two resets to filter
+  lag = (t[front_resets]-shift(t[front_resets],1))[1:*] ; lag between resets
+  duplicate = front_resets[where(lag lt 40d/(2d^20))+1]
+  d[duplicate].channel = 10000 ; assign a dummy channel that will not be in the histogram
+endif
+rear_resets = where(d.a2d_index eq 17 and d.channel eq -2, nrear_resets)
+if nrear_resets gt 1 then begin ; needs at least two resets to filter
+  lag = (t[rear_resets]-shift(t[rear_resets],1))[1:*] ; lag between resets
+  duplicate = rear_resets[where(lag lt 40d/(2d^20))+1]
+  d[duplicate].channel = 10000 ; assign a dummy channel that will not be in the histogram
+endif
+
 tbin = fcheck(slice, time+2d^(-20))
 
 nslice = ceil(time/tbin)
@@ -79,14 +95,8 @@ endif else begin
   lc_front = lonarr(ceil(time))
   spec_front = reform(lonarr(8194,nslice))
 endelse
-uld_front = spec_front[1,*] ; -1
-reset_front = spec_front[0,*] ; -2
-if reset_front gt 0 then begin
-  temp_use = where(d[front].channel eq -2)
-  temp_offset = ((d[front])[temp_use].time-shift((d[front])[temp_use].time,1))[1:*]
-  ;print,(histogram(temp_offset,bin=10))[0:10]
-  reset_front = total(temp_offset ge 40) ; ad-hoc value to call a reset a duplicate
-endif
+uld_front = spec_front[1,*] ; channel == -1
+reset_front = spec_front[0,*] ; channel == -2
 spec_front = spec_front[2:*,*]
 
 if nrear gt 0 then begin
@@ -98,12 +108,6 @@ endif else begin
 endelse
 uld_rear = spec_rear[1,*] ; -1
 reset_rear = spec_rear[0,*] ; -2
-if reset_front gt 0 then begin
-  temp_use = where(d[rear].channel eq -2)
-  temp_offset = ((d[rear])[temp_use].time-shift((d[rear])[temp_use].time,1))[1:*]
-  ;print,(histogram(temp_offset,bin=10))[0:10]
-  reset_rear = total(temp_offset ge 40) ; ad-hoc value to call a reset a duplicate
-endif
 spec_rear = spec_rear[2:*,*]
 
 if keyword_set(plot) then begin
